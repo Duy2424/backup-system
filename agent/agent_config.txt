@@ -1,0 +1,18 @@
+# ============================================================
+#  CAU HINH AGENT  -  may client (Win Server 2012 R2)
+# ============================================================
+#  File nay duoc shared/config.py doc tu dong (tim 2 dong:
+#  SERVER_URL= ... va AGENT_TOKEN= ...). Chi can sua 2 dong duoi.
+#
+#  - SERVER_URL : dia chi may Storage Server (Win Server 2016).
+#                 Theo bao cao, dai mang Host-only la 192.168.10.0/24,
+#                 server chay o 192.168.10.1 cong 5000.
+#
+#  - AGENT_TOKEN: token xac thuc cua user (gui kem header X-Auth-Token).
+#                 Lay token nay o trang Admin tren web UI
+#                 (cot "Token" cua tung user). De trong se khong goi
+#                 duoc API (server tra ve 401 Unauthorized).
+# ============================================================
+
+SERVER_URL=http://192.168.10.1:5000
+AGENT_TOKEN=

@@ -1,0 +1,5 @@
+He dieu hanh: Windows Server 2012 R2
+Kien truc: x64
+Version: 6.3.9600
+RAM: 4 GB
+HDD: 60 GB

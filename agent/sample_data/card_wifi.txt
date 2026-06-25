@@ -1,0 +1,5 @@
+Network Adapter
+Name: Ethernet0
+Mode: Host-only
+IP: 192.168.10.20
+DHCP: Disabled

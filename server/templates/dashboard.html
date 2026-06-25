@@ -25,31 +25,95 @@
     </div>
 </div>
 
+<style>
+  .comp-box{display:flex;align-items:center;gap:.5rem;width:100%;padding:.55rem .7rem;border:1px solid #dee2e6;border-radius:.5rem;cursor:pointer;background:#fff;transition:all .15s;margin:0;}
+  .comp-box:hover{border-color:#0d6efd;background:#f1f6ff;}
+  .comp-box.checked{border-color:#0d6efd;background:#e7f1ff;}
+  .comp-box input{width:1.05rem;height:1.05rem;flex:0 0 auto;}
+  .comp-box .comp-ic{color:#1e3a5f;}
+</style>
+
 <div class="card mb-4">
-    <div class="card-header"><i class="bi bi-cloud-arrow-up"></i> Tao ban backup moi</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-cloud-arrow-up"></i> Tao ban backup moi &mdash; chon thanh phan</span>
+        <span class="badge bg-light text-dark border" id="selCount">0 muc</span>
+    </div>
     <div class="card-body">
-        <div class="row g-3 align-items-center">
-            <div class="col-md-7">
-                <form method="POST" action="{{ url_for('start_backup') }}" id="fullBackupForm">
-                    <input type="hidden" name="type" value="full">
-                    <button type="submit" class="btn btn-backup">
-                        <i class="bi bi-shield-check"></i> Backup toan bo (file + system state)
-                    </button>
-                </form>
-                <small class="text-muted d-block mt-2">
-                    Backup toan bo bao gom file nguoi dung va trang thai he thong mang
-                    (IPv4/IPv6, Firewall, Routes, Hosts, SMB Shares, Port Proxy).
+        <form method="POST" action="{{ url_for('start_backup') }}" id="backupForm">
+            <input type="hidden" name="components" id="componentsInput">
+            <input type="hidden" name="path" id="filesPathInput">
+
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <small class="text-muted">
+                    Tick thanh phan can backup. Khi restore se chi khoi phuc dung thanh phan da backup.
+                    <strong>Tick het = backup toan bo.</strong>
                 </small>
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-secondary" id="btnSelectAll">
+                        <i class="bi bi-check-all"></i> Chon het
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="btnClearAll">
+                        <i class="bi bi-x-lg"></i> Bo chon
+                    </button>
+                </div>
             </div>
-            <div class="col-md-5">
-                <button type="button" class="btn btn-outline-primary"
+
+            <div class="row g-2" id="componentGrid">
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box"><input type="checkbox" class="comp-check" value="ipv4" checked>
+                        <span><i class="bi bi-hdd-network comp-ic"></i> IPv4</span></label>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box"><input type="checkbox" class="comp-check" value="ipv6" checked>
+                        <span><i class="bi bi-ethernet comp-ic"></i> IPv6</span></label>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box"><input type="checkbox" class="comp-check" value="firewall" checked>
+                        <span><i class="bi bi-shield-shaded comp-ic"></i> Firewall (3 profile)</span></label>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box"><input type="checkbox" class="comp-check" value="hosts" checked>
+                        <span><i class="bi bi-file-earmark-text comp-ic"></i> Hosts file</span></label>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box"><input type="checkbox" class="comp-check" value="shares" checked>
+                        <span><i class="bi bi-folder-symlink comp-ic"></i> SMB Shares</span></label>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box"><input type="checkbox" class="comp-check" value="route" checked>
+                        <span><i class="bi bi-signpost-split comp-ic"></i> Persistent Route</span></label>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box"><input type="checkbox" class="comp-check" value="portproxy" checked>
+                        <span><i class="bi bi-diagram-3 comp-ic"></i> Port Proxy</span></label>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box"><input type="checkbox" class="comp-check" value="defender" checked>
+                        <span><i class="bi bi-shield-lock comp-ic"></i> Defender</span></label>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <label class="comp-box" id="filesBox"><input type="checkbox" class="comp-check" value="files" id="chkFiles" checked>
+                        <span><i class="bi bi-folder2-open comp-ic"></i> Thu muc tu chon</span></label>
+                </div>
+            </div>
+
+            <div class="mt-2 small" id="filesPathDisplay">
+                <i class="bi bi-folder"></i> Thu muc se backup:
+                <code id="filesPathText">(mac dinh)</code>
+                <button type="button" class="btn btn-link btn-sm p-0 ms-1"
                         data-bs-toggle="modal" data-bs-target="#folderModal">
-                    <i class="bi bi-folder2-open"></i> Browse Folder &amp; backup thu muc chon
+                    <i class="bi bi-pencil-square"></i> Chon thu muc khac
                 </button>
             </div>
-        </div>
 
-        <!-- Progress bar real-time (an mac dinh, hien khi co job dang chay) -->
+            <div class="mt-3">
+                <button type="submit" class="btn btn-backup" id="btnBackup">
+                    <i class="bi bi-shield-check"></i> Backup cac muc da chon
+                </button>
+            </div>
+        </form>
+
+        <!-- Progress bar real-time -->
         <div class="progress-container" id="progressContainer">
             <div class="d-flex justify-content-between mb-1">
                 <strong id="progressLabel">Dang xu ly job...</strong>
@@ -111,7 +175,14 @@
                         {% if backups %}
                             {% for b in backups %}
                             <tr>
-                                <td class="small"><i class="bi bi-file-earmark-lock"></i> {{ b.filename }}</td>
+                                <td class="small">
+                                    <div><i class="bi bi-file-earmark-lock"></i> {{ b.filename }}</div>
+                                    {% if b.components %}
+                                    <div class="mt-1">
+                                        {% for c in b.components %}<span class="badge bg-light text-dark border me-1" style="font-weight:500;">{{ c }}</span>{% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </td>
                                 <td class="small backup-size" data-bytes="{{ b.size or 0 }}">-</td>
                                 <td>
                                     {% if b.status == 'completed' %}
@@ -176,13 +247,10 @@
           Da chon: <code id="selectedPathLabel">(chua chon)</code>
         </div>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huy</button>
-        <form method="POST" action="{{ url_for('start_backup') }}" id="selectedBackupForm">
-          <input type="hidden" name="type" value="selected">
-          <input type="hidden" name="path" id="selectedPathInput">
-          <button type="submit" class="btn btn-backup" id="confirmSelectBtn" disabled>
-            <i class="bi bi-shield-check"></i> Backup thu muc nay
-          </button>
-        </form>
+        <button type="button" class="btn btn-backup" id="confirmSelectBtn" disabled
+                onclick="confirmFolderSelection()">
+          <i class="bi bi-check2"></i> Dung thu muc nay
+        </button>
       </div>
     </div>
   </div>
@@ -259,9 +327,73 @@ let _selectedPath = null;
 function selectPath(path) {
     _selectedPath = path;
     document.getElementById("selectedPathLabel").textContent = path;
-    document.getElementById("selectedPathInput").value = path;
     document.getElementById("confirmSelectBtn").disabled = false;
 }
+
+// Xac nhan thu muc da chon trong modal -> gan vao thanh phan 'files'
+function confirmFolderSelection() {
+    if (!_selectedPath) return;
+    document.getElementById("filesPathInput").value = _selectedPath;
+    document.getElementById("filesPathText").textContent = _selectedPath;
+    var chk = document.getElementById("chkFiles");
+    chk.checked = true;
+    refreshCompBoxes();
+    updateSelCount();
+    var inst = bootstrap.Modal.getInstance(document.getElementById("folderModal"));
+    if (inst) inst.hide();
+}
+
+// ===== Chon thanh phan backup =====
+function refreshCompBoxes() {
+    document.querySelectorAll(".comp-check").forEach(function (c) {
+        c.closest(".comp-box").classList.toggle("checked", c.checked);
+    });
+    var filesChecked = document.getElementById("chkFiles").checked;
+    document.getElementById("filesPathDisplay").style.display = filesChecked ? "block" : "none";
+}
+
+function updateSelCount() {
+    var n = document.querySelectorAll(".comp-check:checked").length;
+    var total = document.querySelectorAll(".comp-check").length;
+    document.getElementById("selCount").textContent =
+        (n === total) ? ("Toan bo (" + n + "/" + total + ")") : (n + "/" + total + " muc");
+    document.getElementById("btnBackup").disabled = (n === 0);
+}
+
+document.querySelectorAll(".comp-check").forEach(function (c) {
+    c.addEventListener("change", function () {
+        if (c.value === "files" && c.checked && !_selectedPath) {
+            var m = new bootstrap.Modal(document.getElementById("folderModal"));
+            m.show();
+        }
+        refreshCompBoxes();
+        updateSelCount();
+    });
+});
+
+document.getElementById("btnSelectAll").addEventListener("click", function () {
+    document.querySelectorAll(".comp-check").forEach(function (c) { c.checked = true; });
+    refreshCompBoxes(); updateSelCount();
+});
+document.getElementById("btnClearAll").addEventListener("click", function () {
+    document.querySelectorAll(".comp-check").forEach(function (c) { c.checked = false; });
+    refreshCompBoxes(); updateSelCount();
+});
+
+document.getElementById("backupForm").addEventListener("submit", function (e) {
+    var checked = Array.prototype.slice.call(document.querySelectorAll(".comp-check:checked"))
+        .map(function (c) { return c.value; });
+    if (checked.length === 0) {
+        e.preventDefault();
+        alert("Hay tick it nhat 1 thanh phan de backup.");
+        return;
+    }
+    document.getElementById("componentsInput").value = checked.join(",");
+    // filesPathInput co the rong -> server tu dung duong dan mac dinh
+});
+
+refreshCompBoxes();
+updateSelCount();
 
 // Tai quick picks
 function loadQuickPicks() {

@@ -1,0 +1,7 @@
+Ghi chu demo:
+- Tao snapshot file system
+- Capture network adapter settings
+- Capture firewall settings
+- Capture defender settings
+- Nen va ma hoa
+- Upload len server (Win 2016)

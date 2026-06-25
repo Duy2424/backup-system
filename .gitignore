@@ -1,0 +1,60 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ===== Virtual environment =====
+venv/
+env/
+ENV/
+.venv
+
+# ===== Backup system runtime data =====
+backup_system.db
+*.db
+*.sqlite
+*.sqlite3
+storage/
+storage/*
+work/
+work/*
+snapshots/
+wheels/
+
+# ===== Backup files =====
+*.bkup
+*.bak
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== IDE / Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Windows =====
+*.exe
+*.msi
+*.dll
+
+# ===== Credentials / Secrets =====
+credentials.json
+secret_key.txt
+*.pem
+*.key
+
+# ===== Config local =====
+agent_config.local.txt
+config.local.py

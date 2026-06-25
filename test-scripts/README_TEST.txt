@@ -46,8 +46,21 @@ LUU Y:
     vao Windows Security tat Tamper Protection truoc.
 
 ------------------------------------------------------------
-MUON DEMO "TOAN BO" 1 LUOT:
+MUON DEMO "TOAN BO" 1 LUOT  (NHAN 1 LAN):
 ------------------------------------------------------------
-  check tat ca -> backup 1 lan -> chay LAN LUOT tat ca doi_*.bat
-  -> restore 1 lan -> check lai tat ca. Khong can file rieng.
+  Da gop san 2 file tong, chay het 8 thanh phan trong 1 lan nhan:
+
+    check_all.bat : XEM trang thai tat ca (chi hien, khong sua, khong can admin).
+    doi_all.bat   : DOI trang thai tat ca. Tu xin quyen Administrator (UAC) khi
+                    nhan -> bam "Yes". IPv4/IPv6 de o CUOI nen neu rot RDP thi
+                    6 thanh phan kia van da doi xong.
+
+  Quy trinh demo nhanh:
+    1. Nhan  check_all.bat   -> xem trang thai GOC.
+    2. WEB UI: bam "BACKUP TOAN BO", doi xong.
+    3. Nhan  doi_all.bat     -> doi het 8 thanh phan (bam Yes o UAC).
+    4. WEB UI: bam "Restore" tu ban backup vua tao, doi xong.
+    5. Nhan  check_all.bat   -> tat ca ve goc => RESTORE DUNG.
+
+  (Van con 9 cap doi_*/check_* rieng le neu muon test tung thanh phan.)
 ============================================================

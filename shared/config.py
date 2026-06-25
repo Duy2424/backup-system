@@ -56,6 +56,23 @@ for _agent_cfg in _agent_cfg_candidates:
 
 AGENT_POLL_INTERVAL = 3
 
+# ===== BACKUP COMPONENTS =====
+# Cac thanh phan co the tick chon backup tren dashboard.
+# Key dung trong job params va trong metadata.json cua ban backup.
+# Quy tac: tick muc nao thi chi backup/restore muc do; tick het = backup toan bo.
+# 'files' = thu muc nguoi dung tu chon qua folder picker.
+BACKUP_COMPONENTS = [
+    "ipv4",       # IPv4: dia chi, subnet mask, gateway, DNS
+    "ipv6",       # IPv6: dia chi, prefix, gateway, DNS
+    "firewall",   # Windows Firewall 3 profile (Domain/Private/Public) + rules
+    "hosts",      # File hosts
+    "shares",     # Network share SMB
+    "route",      # Persistent route (routing table)
+    "portproxy",  # Port proxy (netsh portproxy)
+    "defender",   # Windows Defender
+    "files",      # Thu muc nguoi dung tu chon (folder picker)
+]
+
 # ===== BACKUP PATHS =====
 # Cac duong dan se duoc backup tren may client (Win 2012)
 # sample_data co the nam o <repo>/agent/sample_data (cau truc moi) hoac <repo>/sample_data (cu)

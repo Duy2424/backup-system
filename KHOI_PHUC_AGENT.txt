@@ -1,0 +1,50 @@
+==============================================================
+ GHI CHU KHOI PHUC AGENT
+==============================================================
+
+Repo nay = ban MOI NHAT (giu nguyen toan bo thay doi 2 tuan qua)
++ khoi phuc lai cac file AGENT va SHARED bi mat (lay tu ban
+backup-system_2.zip cach day 2 tuan).
+
+----- FILE DA KHOI PHUC (truoc do bi thieu) -----
+  agent/agent.py
+  agent/backup_logic.py
+  agent/folder_browser.py
+  agent/network_advanced.py
+  agent/remote_storage.py
+  agent/restore_logic.py
+  agent/sql_registry.py
+  agent/system_state.py
+  agent/start_agent.bat
+  agent/sample_data/        (du lieu mau de test)
+  shared/encryption_utils.py   (AES-256 - file CORE, ban moi cung bi mat)
+  shared/snapshot.py           (SHA-256 snapshot - file CORE, ban moi cung bi mat)
+  .gitignore, LICENSE, install.bat, download_wheels.bat
+  server/start_server.bat
+
+----- FILE GIU NGUYEN BAN MOI (co thay doi trong 2 tuan) -----
+  server/server.py        (doi ten endpoint /api/browse/* -> /api/folder-browser/*)
+  server/scheduler.py     (viet lai nhieu - tinh nang lap lich)
+  shared/config.py        (giong het ban cu)
+  shared/database.py      (them bang 'schedules')
+  agent/agent_config.txt  (chi doi phan comment, da cap nhat IP 192.168.10.1:5000)
+  templates/, requirements.txt, README.md, test-scripts/, ...
+
+----- DA KIEM TRA TUONG THICH (agent cu <-> server moi) -----
+  [OK] Moi endpoint agent goi (/api/jobs/poll, /api/jobs/<id>/update,
+       /api/jobs/<id>/backup_done, /api/ping, /api/storage/*) DEU CON
+       NGUYEN ten trong server moi.
+  [OK] Server moi proxy /api/folder-browser/quick|list -> /folders/quick|list
+       cua agent (port 5001). Agent cu phuc vu dung 2 duong dan nay.
+  [OK] Agent gan nhu khong goi ham nao trong database.py -> thay doi
+       'schedules' khong anh huong agent.
+  [OK] config.py giong het 2 ban; agent doc dung SERVER_URL.
+  [OK] 14/14 file .py bien dich sach; agent import duoc encryption_utils,
+       snapshot, database.
+
+LUU Y: Day la code agent tai thoi diem 2 tuan truoc. Neu trong 2 tuan
+do ban CO sua rieng file agent thi nhung thay doi do khong nam trong
+ca 2 file zip nen khong the khoi phuc. Tuy nhien toan bo thay doi 2 tuan
+qua deu o phia server/scheduler/test-scripts, nen kha nang agent khong
+bi sua la rat cao.
+==============================================================

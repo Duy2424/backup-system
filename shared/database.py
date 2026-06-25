@@ -4,6 +4,7 @@ Database SQLite - quan ly user, backup history, jobs, schedules
 import sqlite3
 import hashlib
 import secrets
+import base64
 import json
 from datetime import datetime
 from contextlib import contextmanager
@@ -30,6 +31,13 @@ def verify_password(password, stored):
 def generate_token():
     """Sinh token ngau nhien cho user"""
     return secrets.token_urlsafe(32)
+
+
+def generate_encryption_key():
+    """Sinh khoa ma hoa Fernet 32 byte tu secrets.token_bytes()
+    (khop mo ta bao cao muc 2.4.4: "khoa Fernet 32 byte qua secrets.token_bytes()").
+    Fernet yeu cau khoa la 32 byte ngau nhien duoc base64 urlsafe-encode."""
+    return base64.urlsafe_b64encode(secrets.token_bytes(32)).decode()
 
 
 @contextmanager
@@ -126,17 +134,16 @@ def init_db():
         # Tao admin mac dinh
         cur.execute("SELECT COUNT(*) FROM users WHERE role='admin'")
         if cur.fetchone()[0] == 0:
-            from cryptography.fernet import Fernet
             cur.execute(
                 "INSERT INTO users (username, password, role, token, encryption_key) VALUES (?, ?, ?, ?, ?)",
                 ("admin", hash_password("admin123"), "admin",
-                 generate_token(), Fernet.generate_key().decode())
+                 generate_token(), generate_encryption_key())
             )
             # Tao user demo
             cur.execute(
                 "INSERT INTO users (username, password, role, token, encryption_key) VALUES (?, ?, ?, ?, ?)",
                 ("user1", hash_password("user123"), "user",
-                 generate_token(), Fernet.generate_key().decode())
+                 generate_token(), generate_encryption_key())
             )
 
         conn.commit()
@@ -173,12 +180,11 @@ def list_users():
 
 
 def create_user(username, password, role="user"):
-    from cryptography.fernet import Fernet
     with get_db() as conn:
         conn.execute(
             "INSERT INTO users (username, password, role, token, encryption_key) VALUES (?, ?, ?, ?, ?)",
             (username, hash_password(password), role,
-             generate_token(), Fernet.generate_key().decode())
+             generate_token(), generate_encryption_key())
         )
 
 

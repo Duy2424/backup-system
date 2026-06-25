@@ -133,6 +133,15 @@ def logout():
 def dashboard():
     user = current_user()
     backups = database.list_backups(user["id"])
+    # Doc danh sach thanh phan da backup (luu trong snapshot_summary) de hien badge
+    for b in backups:
+        comps = []
+        try:
+            ss = json.loads(b.get("snapshot_summary") or "{}")
+            comps = ss.get("components") or []
+        except Exception:
+            comps = []
+        b["components"] = comps
     jobs = database.list_jobs(user["id"], limit=10)
     # Thong ke
     stats = {
@@ -147,20 +156,36 @@ def dashboard():
 @app.route("/backup", methods=["POST"])
 @login_required
 def start_backup():
-    """User click nut backup -> tao job cho agent"""
+    """User chon thanh phan can backup -> tao job cho agent.
+    Form gui: components=ipv4,firewall,files... va path=<thu muc> (neu chon 'files').
+    Tick het = backup toan bo. Tuong thich nguoc voi form cu (type=full/selected)."""
     user = current_user()
-    backup_type = request.form.get("type", "full")
+
+    raw = request.form.get("components", "")
+    components = [c.strip() for c in raw.split(",") if c.strip() in config.BACKUP_COMPONENTS]
     selected_path = request.form.get("path", "").strip()
 
-    params = {}
-    if backup_type == "selected" and selected_path:
-        # Kiem tra path co ton tai khong (chay tren may agent nen chi check format)
+    # Tuong thich nguoc form cu (type=full / type=selected)
+    btype = request.form.get("type", "")
+    if not components:
+        if btype == "selected" and selected_path:
+            components = ["files"]
+        else:
+            components = list(config.BACKUP_COMPONENTS)  # mac dinh: toan bo
+
+    params = {"components": components}
+    if "files" in components and selected_path:
         params["paths"] = [selected_path]
     else:
-        params["paths"] = None  # Dung default
+        params["paths"] = None
 
     job_id = database.create_job(user["id"], "backup", params)
-    flash(f"Da tao job backup #{job_id}. Agent se thuc hien trong vai giay...", "info")
+    is_full = set(components) >= set(config.BACKUP_COMPONENTS)
+    if is_full:
+        flash(f"Da tao job backup #{job_id} (toan bo). Agent se thuc hien trong vai giay...", "info")
+    else:
+        flash(f"Da tao job backup #{job_id} (chon loc: {', '.join(components)}). "
+              f"Agent se thuc hien trong vai giay...", "info")
     return redirect(url_for("dashboard"))
 
 
@@ -301,10 +326,11 @@ def api_poll_job():
     return jsonify({"job": job})
 
 
-@app.route("/api/jobs/<int:job_id>/update", methods=["POST"])
+@app.route("/api/jobs/<int:job_id>/update", methods=["POST", "PATCH"])
 @api_auth_required
 def api_update_job(job_id):
-    """Agent bao tien do va trang thai job"""
+    """Agent bao tien do va trang thai job.
+    Chap nhan ca POST (Bang 2.3) va PATCH (Bang 2.2) trong bao cao."""
     data = request.json or {}
     updates = {}
     for k in ["status", "progress", "message"]:
@@ -332,14 +358,69 @@ def api_backup_done(job_id):
         paths=data.get("paths", []),
         backup_type=data.get("backup_type", "full")
     )
+    # Luu danh sach thanh phan da backup vao snapshot_summary (de dashboard hien thi
+    # va de biet ban backup nay gom nhung gi).
+    ss = data.get("snapshot_summary", {}) or {}
+    if "components" not in ss and data.get("components") is not None:
+        ss["components"] = data.get("components")
     database.update_backup(
         backup_id,
         size=data.get("size", 0),
-        snapshot_summary=json.dumps(data.get("snapshot_summary", {})),
+        snapshot_summary=json.dumps(ss),
         status="completed"
     )
     database.update_job(job_id, backup_id=backup_id)
     return jsonify({"ok": True, "backup_id": backup_id})
+
+
+@app.route("/api/jobs/create", methods=["POST"])
+@api_auth_required
+def api_create_job():
+    """Tao job backup moi qua REST (xac thuc bang X-Auth-Token).
+    Khop Bang 2.2 bao cao: POST /api/jobs/create -> Tao job backup moi.
+    Ho tro chon thanh phan: body co the gui {"components": [...], "type": "selected", "paths": [...]}."""
+    user = request._api_user
+    data = request.json or {}
+    backup_type = data.get("type", "full")
+    paths = data.get("paths")
+    components = data.get("components")
+    if isinstance(components, list):
+        components = [c for c in components if c in config.BACKUP_COMPONENTS] or list(config.BACKUP_COMPONENTS)
+    else:
+        components = list(config.BACKUP_COMPONENTS)
+    params = {"components": components}
+    if "files" in components and backup_type == "selected" and paths:
+        params["paths"] = paths if isinstance(paths, list) else [paths]
+    else:
+        params["paths"] = None
+    job_id = database.create_job(user["id"], "backup", params)
+    return jsonify({"ok": True, "job_id": job_id})
+
+
+@app.route("/api/backups")
+@api_auth_required
+def api_backups():
+    """Lay danh sach backup cua chinh user (xac thuc bang X-Auth-Token).
+    Khop Bang 2.2 bao cao: GET /api/backups -> Lay danh sach backup cua user."""
+    user = request._api_user
+    return jsonify({"backups": database.list_backups(user["id"])})
+
+
+@app.route("/api/users/<int:user_id>", methods=["DELETE"])
+@api_auth_required
+def api_delete_user(user_id):
+    """Admin xoa tai khoan user qua REST (DELETE).
+    Khop Bang 2.2 bao cao: DELETE /api/users/{id} -> Admin xoa tai khoan user.
+    Yeu cau token cua tai khoan co quyen admin."""
+    actor = request._api_user
+    if actor.get("role") != "admin":
+        return jsonify({"error": "forbidden"}), 403
+    if user_id == actor["id"]:
+        return jsonify({"error": "cannot_delete_self"}), 400
+    if not database.get_user_by_id(user_id):
+        return jsonify({"error": "not_found"}), 404
+    database.delete_user(user_id)
+    return jsonify({"ok": True})
 
 
 # ===== STORAGE API (Agent upload/download file backup) =====

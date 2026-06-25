@@ -1,0 +1,4 @@
+Windows Firewall Settings
+Domain Profile: ON
+Private Profile: OFF
+Public Profile: ON
